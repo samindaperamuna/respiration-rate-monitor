@@ -17,8 +17,8 @@ public class SpringFoxConfig {
 
     private ApiInfo apiInfo() {
         return new ApiInfo(
-                "Heart-beat Monitor Data",
-                "Publish heart rate data as a REST API",
+                "Respiration Monitor Data",
+                "Publish respiration monitor rate data as a REST API",
                 "0.1",
                 "Not provided",
                 new Contact("John Doe", "www.example.com", "myeaddress@company.com"),

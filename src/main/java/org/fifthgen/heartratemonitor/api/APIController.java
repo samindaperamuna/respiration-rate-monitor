@@ -17,8 +17,8 @@ public class APIController {
     @Autowired
     private SseService sseService;
 
-    @GetMapping(value = "/heartbeatSSE", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter getHeartBeatDataSSE() {
+    @GetMapping(value = "/breathingRateSSE", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter getBreathingRateSSE() {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
         sseService.addEmitter(emitter);
 
