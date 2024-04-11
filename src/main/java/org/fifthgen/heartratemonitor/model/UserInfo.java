@@ -3,10 +3,12 @@ package org.fifthgen.heartratemonitor.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +24,6 @@ public class UserInfo implements UserDetails {
     private String username;
     @JsonIgnore
     private String password;
-    private Date createDate;
 
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<UserRole> roles = new HashSet<>();
