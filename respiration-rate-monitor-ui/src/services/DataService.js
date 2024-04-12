@@ -6,7 +6,7 @@ const sse1URL = "http://localhost:8080/api/v1/breathingRateSSE1"
 const sse2URL = "http://localhost:8080/api/v1/breathingRateSSE2"
 
 const getToken = async () => {
-
+    
 }
 
 const fetchData = async (sse, callback) => {
