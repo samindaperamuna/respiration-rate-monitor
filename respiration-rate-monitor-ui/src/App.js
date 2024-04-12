@@ -1,12 +1,12 @@
 import logo from './logo.svg';
 import './App.css';
-import { HeartbeatGraph } from './components/HeartbeatGraph';
+import { BreathingRateGraph } from './components/BreathingRateGraph';
 
 function App() {
   return (
-    <div className='App'>
+    <div className='App' style={{ position: "relative", margin: 0, width: "50vw" }}>
       {" "}
-      <HeartbeatGraph />{" "}
+      <BreathingRateGraph />{" "}
     </div>
   )
 }

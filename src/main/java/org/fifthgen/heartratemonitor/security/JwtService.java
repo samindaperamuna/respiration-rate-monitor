@@ -1,6 +1,8 @@
 package org.fifthgen.heartratemonitor.security;
 
 import java.security.Key;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,11 +58,14 @@ public class JwtService {
     }
 
     private String createToken(Map<String, Object> claims, String username) {
+        Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        Instant expiration = issuedAt.plus(3, ChronoUnit.MINUTES);
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(username)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 1))
+                .setIssuedAt(Date.from(issuedAt))
+                .setExpiration(Date.from(expiration))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
     }
 

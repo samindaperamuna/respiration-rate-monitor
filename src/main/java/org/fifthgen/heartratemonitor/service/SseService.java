@@ -24,7 +24,7 @@ public class SseService {
         emitter.onTimeout(() -> emitters.remove(emitter));
     }
 
-    @Scheduled(fixedRate = 250)
+    @Scheduled(fixedRate = 25)
     public void sendEvents() {
         for (SseEmitter emitter : emitters) {
             try {

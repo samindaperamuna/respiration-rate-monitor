@@ -17,8 +17,16 @@ public class APIController {
     @Autowired
     private SseService sseService;
 
-    @GetMapping(value = "/breathingRateSSE", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter getBreathingRateSSE() {
+    @GetMapping(value = "/breathingRateSSE1", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter getBreathingRateSSE1() {
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        sseService.addEmitter(emitter);
+
+        return emitter;
+    }
+
+    @GetMapping(value = "/breathingRateSSE2", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter getBreathingRateSSE2() {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
         sseService.addEmitter(emitter);
 
