@@ -1,0 +1,19 @@
+#respRateContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    font-weight: bold;
+}
+
+#respRateNotification {
+    font-weight: bold;
+}
+
+.respRate {
+    width: 25px;
+    color: gray;
+}
+
+.respRateAlert {
+    color: red;
+}

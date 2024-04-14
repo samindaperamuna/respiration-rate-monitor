@@ -1,5 +1,5 @@
 import { Line } from "react-chartjs-2";
-import { fetchData, getToken } from "../services/DataService";
+import { fetchBreathingData, fetchRespirationRate, getToken } from "../services/DataService";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -11,7 +11,7 @@ import {
     Legend
 } from "chart.js";
 import { useEffect, useRef, useState } from "react";
-import { callback } from "chart.js/helpers";
+import "./styles.css";
 
 ChartJS.register(
     CategoryScale,
@@ -33,10 +33,10 @@ export const breathingData = {
     ]
 }
 
-getToken();
-
-export const BreathingRateGraph = () => {
+export const BreathingRateGraph = ({ setRespRate }) => {
     const [chart, setChart] = useState();
+    var count = useRef(0);
+    var sseNo = useRef(1);
 
     const chartReference = useRef(null);
     useEffect(() => {
@@ -45,40 +45,39 @@ export const BreathingRateGraph = () => {
 
     // Fetch data from the API server
     useEffect(() => {
-        // Counter on react context
-        var count = 0;
-        var sseNo = 1;
-
-        var token = localStorage.getItem("token");
-
         const callAPI = () => {
             if (chart) {
-                fetchData(sseNo, (parsedData) => {
-                    if (count == 0) {
-                        var date = new Date(parsedData.timestamp);
-                        var labels = [];
-
-                        for (var i = 0; i < 400; i++) {
-                            if (i % 40 == 0)
-                                date.setSeconds(date.getSeconds() + 1);
-                            var timestamp = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
-                            labels.push(timestamp);
-                        }
-
-                        chart.data.labels = labels;
+                // Breathing data
+                fetchBreathingData(sseNo.current, (parsedData) => {
+                    // Update labels
+                    var labels = [];
+                    for (var i = 0; i < 400; i++) {
+                        labels.push(parsedData[i].Timestamp);
                     }
 
-                    chart.data.datasets[0].data.push(parsedData.data);
-                    chart.update();
-                    console.log('Chart updated');
+                    chart.data.labels = labels;
 
-                    count++;
+                    // Update chart datapoints
+                    const interval = setInterval(() => {
+                        chart.data.datasets[0].data.push(parsedData[count.current].Data);
+                        chart.update();
 
-                    if (count == 400) count = 0;
+                        count.current = count.current + 1;
+
+                        if (count.current == 400) {
+                            clearInterval(interval);
+                            count.current = 0;
+                        };
+                    }, 25);
                 });
 
-                if (sseNo == 1) sseNo = 2;
-                else sseNo = 1;
+                // Respiration rate
+                fetchRespirationRate(sseNo.current, (respirationRate) => {
+                    if (respirationRate) setRespRate(respirationRate.rate);
+                });
+
+                if (sseNo.current == 1) sseNo.current = 2;
+                else sseNo.current = 1;
             }
         }
 
@@ -95,7 +94,7 @@ export const BreathingRateGraph = () => {
         }, 10000);
 
         return () => clearInterval(interval);
-    });
+    }, [chart]);
 
     const options = {
         animations: false,
@@ -146,10 +145,13 @@ export const BreathingRateGraph = () => {
                     // }
                 },
                 min: 0,
-                max: 0.8
+                max: 10.0
             }
         }
     };
 
-    return <Line options={options} data={breathingData} ref={chartReference} />
+    return (
+        <>
+            <Line options={options} data={breathingData} ref={chartReference} />
+        </>)
 }

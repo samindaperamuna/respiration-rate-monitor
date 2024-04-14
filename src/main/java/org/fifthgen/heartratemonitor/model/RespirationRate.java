@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class HeartRateData {
-    private String timestamp;
-    private double data;
+public class RespirationRate {
+    private int rate;
 }

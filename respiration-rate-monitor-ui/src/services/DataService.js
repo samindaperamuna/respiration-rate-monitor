@@ -1,90 +1,105 @@
-import axios from "axios";
-import { setAuthToken } from "./AuthTokenService";
+import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 const authUrl = "http://localhost:8080/api/v1/auth/login"
-const sse1URL = "http://localhost:8080/api/v1/breathingRateSSE1"
-const sse2URL = "http://localhost:8080/api/v1/breathingRateSSE2"
+const breathingDataURL = "http://localhost:8080/api/v1/breathingData"
+const respirationRateURL = "http://localhost:8080/api/v1/respirationRate"
 
 const getToken = async () => {
-    
-}
-
-const fetchData = async (sse, callback) => {
+    var token;
     const loginPayload = {
         username: 'user',
         password: 'user123'
     }
 
+    const response = await fetch(authUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(loginPayload)
+    });
+
+    if (response.ok) {
+        token = await response.json();
+    } else {
+        console.log("Failed to fetch token: " + response.error)
+    }
+
+    return token.accessToken;
+}
+
+const fetchBreathingData = async (fileNo, callback) => {
     try {
-        var sseUrl, count = 0;
+        const token = await getToken();
 
-        if (sse = 1) sseUrl = sse1URL;
-        else sseUrl = sse2URL;
-        
-        const events = new EventSource(sseUrl);
+        const response = await fetch(breathingDataURL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': "Bearer " + token
+            },
+            body: JSON.stringify({
+                fileNo: fileNo
+            })
+        });
 
-        events.onmessage = event => {
-            if (count == 400) {
-                events.close();
+        if (response.ok) {
+            var breathingData = await response.json();
+            var formattedData = formatTimestamp(breathingData);
 
-                return;
-            }
-
-            const parsedData = JSON.parse(event.data);
-
-            console.log(parsedData);
-            callback(parsedData);
-
-            count++;
-        };
-
-        events.onerror = (error) => {
-            console.error("Error occurred:", error);
-            events.close();
-        };
+            callback(formattedData);
+        } else {
+            console.log("Failed to fetch breathing data: " + response.error);
+        }
     } catch (error) {
         console.error("Error fetching data:", error);
     }
-
-    // axios.post(authUrl, loginPayload)
-    //     .then(response => {
-    //         //get token from response
-    //         const token = response.data.accessToken;
-
-    //         //set JWT token to local
-    //         localStorage.setItem("token", token);
-
-    //         //set token to axios common header
-    //         setAuthToken(token);
-
-    //         axios({
-    //             url: sseURL,
-    //             data: {
-    //                 prompt: 'json data'
-    //             },
-    //             headers: {
-    //                 'accept': '*',
-    //                 'content-type': 'application/json'
-    //             },
-    //             method: 'POST',
-    //             onDownloadProgress: progressEvent => {
-    //                 const xhr = progressEvent.event.target
-    //                 const { responseText } = xhr
-    //                 console.log("=====responseText======")
-    //                 console.log(responseText)
-    //             }
-    //         }).then(({ data }) => Promise.resolve(data));
-    //     })
-    //     .catch(err => {
-    //         console.log(err);
-    //     });
-
-    // const token = localStorage.getItem("token");
-    // if (token) {
-    //     setAuthToken(token);
-    // }
-
-
 };
 
-export { getToken, fetchData };
+function formatTimestamp(dataset) {
+    return dataset.map(data => {
+        var date = new Date(data.Timestamp);
+        var timestamp = getHours(date) + ":" + getMinutes(date) + ":" + getSeconds(date);
+
+        data.Timestamp = timestamp;
+
+        return data;
+    });
+}
+
+function getHours(date) {
+    return (date.getHours() < 10 ? '0' : '') + date.getHours();
+}
+
+function getMinutes(date) {
+    return (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
+}
+
+function getSeconds(date) {
+    return (date.getSeconds() < 10 ? '0' : '') + date.getSeconds();
+}
+
+const fetchRespirationRate = async (fileNo, callback) => {
+    const token = await getToken();
+
+    const response = await fetch(respirationRateURL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': "Bearer " + token
+        },
+        body: JSON.stringify({
+            fileNo: fileNo
+        })
+    });
+
+    if (response.ok) {
+        var respirationRate = await response.json();
+
+        callback(respirationRate);
+    } else {
+        console.log("Failed to fetch respiration rate: " + response.error)
+    }
+}
+
+export { getToken, fetchBreathingData, fetchRespirationRate };
