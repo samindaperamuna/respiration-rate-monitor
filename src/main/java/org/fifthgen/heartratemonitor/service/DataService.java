@@ -27,7 +27,7 @@ public class DataService {
         List<BreathingData> breathingDataList = new ArrayList<>();
 
         try {
-            File file = new ClassPathResource(jsonFile).getFile();
+            File file = new File(jsonFile);
             breathingDataList = mapper.readValue(file, new TypeReference<List<BreathingData>>() {
             });
         } catch (IOException e) {
@@ -42,7 +42,7 @@ public class DataService {
         RespirationRate respirationRate = null;
 
         try {
-            File file = new ClassPathResource(jsonFile).getFile();
+            File file = new File(jsonFile);
             respirationRate = mapper.readValue(file, RespirationRate.class);
         } catch (IOException e) {
             log.error("Failed to read respiration rate file: {}", e.getLocalizedMessage());
