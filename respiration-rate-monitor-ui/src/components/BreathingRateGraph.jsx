@@ -1,5 +1,5 @@
 import { Line } from "react-chartjs-2";
-import { fetchBreathingData, fetchRespirationRate, getToken } from "../services/DataService";
+import { fetchBreathingData, fetchRespirationRate, formatTime } from "../services/DataService";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -36,6 +36,8 @@ export const breathingData = {
 export const BreathingRateGraph = ({ setRespRate }) => {
     const [chart, setChart] = useState();
     const [inProgress, setInProgress] = useState(false);
+    const [curTime, setCurTime] = useState(null);
+
     var count = useRef(0);
     var sseNo = useRef(1);
 
@@ -58,6 +60,9 @@ export const BreathingRateGraph = ({ setRespRate }) => {
                 }
 
                 chart.data.labels = labels;
+
+                var date = new Date(Date.now() - 10000);
+                setCurTime(formatTime(date));
 
                 // Update chart datapoints
                 const interval = setInterval(() => {
@@ -123,7 +128,8 @@ export const BreathingRateGraph = ({ setRespRate }) => {
             x: {
                 title: {
                     display: true,
-                    text: 'Time (s)'
+                    text: curTime,
+                    align: 'start'
                 },
                 grid: {
                     display: true
@@ -131,7 +137,8 @@ export const BreathingRateGraph = ({ setRespRate }) => {
                 ticks: {
                     maxTicksLimit: 10,
                     callback: function (value, index, ticks) {
-                        return index % 4 === 0 ? this.getLabelForValue(value) : ''
+                        // return index % 4 === 0 ? this.getLabelForValue(value) : ''
+                        return ''
                     },
                     font: {
                         size: 12

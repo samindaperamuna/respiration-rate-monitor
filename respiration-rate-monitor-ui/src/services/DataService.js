@@ -59,12 +59,15 @@ const fetchBreathingData = async (fileNo, callback) => {
 function formatTimestamp(dataset) {
     return dataset.map(data => {
         var date = new Date(data.Timestamp);
-        var timestamp = getHours(date) + ":" + getMinutes(date) + ":" + getSeconds(date);
-
+        var timestamp = formatTime(date);
         data.Timestamp = timestamp;
 
         return data;
     });
+}
+
+export const formatTime = (date) => {
+    return getHours(date) + ":" + getMinutes(date) + ":" + getSeconds(date);
 }
 
 function getHours(date) {
