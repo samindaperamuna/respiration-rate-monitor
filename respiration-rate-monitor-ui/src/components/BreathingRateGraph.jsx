@@ -35,6 +35,7 @@ export const breathingData = {
 
 export const BreathingRateGraph = ({ setRespRate }) => {
     const [chart, setChart] = useState();
+    const [inProgress, setInProgress] = useState(false);
     var count = useRef(0);
     var sseNo = useRef(1);
 
@@ -45,40 +46,43 @@ export const BreathingRateGraph = ({ setRespRate }) => {
 
     // Fetch data from the API server
     useEffect(() => {
+        if (!chart || inProgress) return;
+
         const callAPI = () => {
-            if (chart) {
-                // Breathing data
-                fetchBreathingData(sseNo.current, (parsedData) => {
-                    // Update labels
-                    var labels = [];
-                    for (var i = 0; i < 400; i++) {
-                        labels.push(parsedData[i].Timestamp);
+            // Breathing data
+            fetchBreathingData(sseNo.current, (parsedData) => {
+                // Update labels
+                var labels = [];
+                for (var i = 0; i < 400; i++) {
+                    labels.push(parsedData[i].Timestamp);
+                }
+
+                chart.data.labels = labels;
+
+                // Update chart datapoints
+                const interval = setInterval(() => {
+                    for (var i = 0; i < 10; i++) {
+                        chart.data.datasets[0].data.push(parsedData[count.current + i].Data);
                     }
 
-                    chart.data.labels = labels;
+                    chart.update();
 
-                    // Update chart datapoints
-                    const interval = setInterval(() => {
-                        chart.data.datasets[0].data.push(parsedData[count.current].Data);
-                        chart.update();
+                    count.current = count.current + 10;
 
-                        count.current = count.current + 1;
+                    if (count.current == 400) {
+                        clearInterval(interval);
+                        count.current = 0;
+                    };
+                }, 250);
+            });
 
-                        if (count.current == 400) {
-                            clearInterval(interval);
-                            count.current = 0;
-                        };
-                    }, 25);
-                });
+            // Respiration rate
+            fetchRespirationRate(sseNo.current, (respirationRate) => {
+                if (respirationRate) setRespRate(respirationRate.rate);
+            });
 
-                // Respiration rate
-                fetchRespirationRate(sseNo.current, (respirationRate) => {
-                    if (respirationRate) setRespRate(respirationRate.rate);
-                });
-
-                if (sseNo.current == 1) sseNo.current = 2;
-                else sseNo.current = 1;
-            }
+            if (sseNo.current == 1) sseNo.current = 2;
+            else sseNo.current = 1;
         }
 
         // Initial API call
