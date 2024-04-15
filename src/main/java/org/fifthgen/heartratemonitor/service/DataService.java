@@ -9,7 +9,11 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,8 +31,8 @@ public class DataService {
         List<BreathingData> breathingDataList = new ArrayList<>();
 
         try {
-            File file = new File(jsonFile);
-            breathingDataList = mapper.readValue(file, new TypeReference<List<BreathingData>>() {
+            byte[] bytes = Files.readAllBytes(Paths.get(jsonFile));
+            breathingDataList = mapper.readValue(bytes, new TypeReference<List<BreathingData>>() {
             });
         } catch (IOException e) {
             log.error("Failed to read breathing data file: {}", e.getLocalizedMessage());
@@ -42,13 +46,27 @@ public class DataService {
         RespirationRate respirationRate = null;
 
         try {
-            File file = new File(jsonFile);
-            respirationRate = mapper.readValue(file, RespirationRate.class);
+            byte[] bytes = Files.readAllBytes(Paths.get(jsonFile));
+            respirationRate = mapper.readValue(bytes, RespirationRate.class);
         } catch (IOException e) {
             log.error("Failed to read respiration rate file: {}", e.getLocalizedMessage());
         }
 
         return respirationRate;
+    }
+
+    private String readRandomAccessFile(String file) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        try (RandomAccessFile raFile = new RandomAccessFile(file, "r");) {
+            while (raFile.getFilePointer() < raFile.length()) {
+                stringBuilder.append(raFile.readLine()).append(System.lineSeparator());
+            }
+        } catch (IOException e) {
+            log.error("An error occurred: {}", e.getLocalizedMessage());
+        }
+
+        return stringBuilder.toString();
     }
 
     private BreathingData produceHeartBeat() {
